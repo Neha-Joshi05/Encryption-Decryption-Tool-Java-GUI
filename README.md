@@ -14,7 +14,7 @@
 
 ## 🌐 Live Demo
 
-👉 **[https://encryption-decryption-tool.onrender.com](https://encryption-decryption-tool.onrender.com)**
+👉 **[https://encryption-decryption-tool.onrender.com](https://encryption-decryption-tool-java-gui.onrender.com)**
 
 ---
 
