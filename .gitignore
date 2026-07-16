@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+*.class
+*.jar
+.DS_Store
+venv/
+encrypted_files/
+decrypted_files/

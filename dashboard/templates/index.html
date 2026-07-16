@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔐 Encryption Decryption Tool</title>
+  <style>
+    :root {
+      --bg:      #0d1117;
+      --card:    #161b22;
+      --border:  rgba(48,54,61,0.9);
+      --accent:  #58a6ff;
+      --green:   #3fb950;
+      --red:     #f85149;
+      --yellow:  #d29922;
+      --purple:  #bc8cff;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ───────────────────────────────── */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left h1 {
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-left p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .algo-badge {
+      background: rgba(88,166,255,0.12);
+      border: 1px solid rgba(88,166,255,0.3);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ── Main Layout ──────────────────────────── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px;
+    }
+
+    /* ── Tab Switcher ─────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      width: fit-content;
+    }
+
+    .tab-btn {
+      padding: 8px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0d1117;
+    }
+
+    /* ── Cards ────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* ── Form Elements ────────────────────────── */
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    textarea, input[type="password"], input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88,166,255,0.1);
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap input { padding-right: 50px; }
+
+    .toggle-pass {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    /* ── Buttons ──────────────────────────────── */
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .btn {
+      padding: 11px 22px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn:active { transform: translateY(0); }
+
+    .btn-encrypt { background: var(--green);  color: #0d1117; }
+    .btn-decrypt { background: var(--accent); color: #0d1117; }
+    .btn-copy    { background: rgba(139,148,158,0.15); color: var(--muted); border: 1px solid var(--border); }
+    .btn-clear   { background: rgba(248,81,73,0.12);  color: var(--red);   border: 1px solid rgba(248,81,73,0.3); }
+
+    /* ── Result Box ───────────────────────────── */
+    .result-box {
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 16px;
+      border: 1px solid;
+      display: none;
+    }
+
+    .result-success { background: rgba(63,185,80,0.08);  border-color: rgba(63,185,80,0.3);  }
+    .result-error   { background: rgba(248,81,73,0.08);  border-color: rgba(248,81,73,0.3);  }
+
+    .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .result-label.ok  { color: var(--green); }
+    .result-label.err { color: var(--red);   }
+
+    .result-text {
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    /* ── Info Panel ───────────────────────────── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .info-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .info-box .icon { font-size: 1.4rem; margin-bottom: 8px; }
+    .info-box .name { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .info-box .val  { font-size: 13px; font-weight: 600; color: var(--accent); }
+
+    /* ── Loading spinner ──────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Strength bar ─────────────────────────── */
+    .strength-bar-bg {
+      height: 4px;
+      background: var(--border);
+      border-radius: 100px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .strength-bar {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.3s, background 0.3s;
+      width: 0%;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>🔐 Encryption / Decryption Tool</h1>
+    <p>Java project — AES-256-GCM authenticated encryption with PBKDF2 key derivation</p>
+  </div>
+  <span class="algo-badge">AES-256-GCM</span>
+</header>
+
+<main>
+
+  <!-- ── Tabs ─────────────────────────────────── -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('encrypt')">🔒 Encrypt</button>
+    <button class="tab-btn"       onclick="switchTab('decrypt')">🔓 Decrypt</button>
+    <button class="tab-btn"       onclick="switchTab('about')"  >ℹ️ About</button>
+  </div>
+
+  <!-- ── ENCRYPT TAB ───────────────────────────── -->
+  <div id="tab-encrypt">
+    <div class="card">
+      <div class="section-title">Encrypt Text</div>
+
+      <div class="form-group">
+        <label>Plaintext — what you want to encrypt</label>
+        <textarea id="enc-input" rows="6" placeholder="Enter your secret text here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-wrap">
+          <input type="password" id="enc-pass" placeholder="Enter a strong password"/>
+          <button class="toggle-pass" onclick="togglePass('enc-pass')">👁</button>
+        </div>
+        <div class="strength-bar-bg"><div class="strength-bar" id="enc-strength-bar"></div></div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px" id="enc-strength-label"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-encrypt" onclick="doEncrypt()" id="enc-btn">🔒 Encrypt</button>
+        <button class="btn btn-copy"    onclick="copyResult('enc-result-text')">📋 Copy</button>
+        <button class="btn btn-clear"   onclick="clearEnc()">🗑️ Clear</button>
+      </div>
+
+      <div class="result-box result-success" id="enc-result">
+        <div class="result-label ok">✅ Encrypted Output (Base64)</div>
+        <div class="result-text" id="enc-result-text"></div>
+      </div>
+
+      <div class="result-box result-error" id="enc-error">
+        <div class="result-label err">❌ Error</div>
+        <div class="result-text" id="enc-error-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DECRYPT TAB ───────────────────────────── -->
+  <div id="tab-decrypt" style="display:none">
+    <div class="card">
+      <div class="section-title">Decrypt Text</div>
+
+      <div class="form-group">
+        <label>Ciphertext — Base64 encoded encrypted text</label>
+        <textarea id="dec-input" rows="6" placeholder="Paste your encrypted Base64 text here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Password (same one used to encrypt)</label>
+        <div class="password-wrap">
+          <input type="password" id="dec-pass" placeholder="Enter the decryption password"/>
+          <button class="toggle-pass" onclick="togglePass('dec-pass')">👁</button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-decrypt" onclick="doDecrypt()" id="dec-btn">🔓 Decrypt</button>
+        <button class="btn btn-copy"    onclick="copyResult('dec-result-text')">📋 Copy</button>
+        <button class="btn btn-clear"   onclick="clearDec()">🗑️ Clear</button>
+      </div>
+
+      <div class="result-box result-success" id="dec-result">
+        <div class="result-label ok">✅ Decrypted Plaintext</div>
+        <div class="result-text" id="dec-result-text"></div>
+      </div>
+
+      <div class="result-box result-error" id="dec-error">
+        <div class="result-label err">❌ Error</div>
+        <div class="result-text" id="dec-error-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ABOUT TAB ─────────────────────────────── -->
+  <div id="tab-about" style="display:none">
+    <div class="card">
+      <div class="section-title">How This Tool Works</div>
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="icon">🔐</div>
+          <div class="name">Encryption Algorithm</div>
+          <div class="val">AES-256-GCM</div>
+        </div>
+        <div class="info-box">
+          <div class="icon">🔑</div>
+          <div class="name">Key Derivation</div>
+          <div class="val">PBKDF2-HMAC-SHA256</div>
+        </div>
+        <div class="info-box">
+          <div class="icon">🔄</div>
+          <div class="name">Iterations</div>
+          <div class="val">120,000</div>
+        </div>
+        <div class="info-box">
+          <div class="icon">🎲</div>
+          <div class="name">Salt Length</div>
+          <div class="val">16 bytes (random)</div>
+        </div>
+        <div class="info-box">
+          <div class="icon">📦</div>
+          <div class="name">IV Length</div>
+          <div class="val">12 bytes (random)</div>
+        </div>
+        <div class="info-box">
+          <div class="icon">✅</div>
+          <div class="name">Auth Tag</div>
+          <div class="val">128-bit GCM tag</div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px; padding:18px; background:var(--bg); border-radius:10px; border:1px solid var(--border); font-size:13px; line-height:2; color:var(--muted);">
+        <b style="color:var(--text)">Binary Packet Format:</b><br>
+        <code style="color:var(--purple)">MAGIC(4) | VERSION(1) | SALT_LEN(1) | IV_LEN(1) | SALT(16) | IV(12) | CIPHERTEXT+TAG</code><br><br>
+        <b style="color:var(--text)">Security Notes:</b><br>
+        ✅ Salt and IV are randomly generated for EVERY encryption<br>
+        ✅ GCM mode detects any tampering — wrong password = authentication failure<br>
+        ✅ Passwords are never stored or transmitted<br>
+        ✅ Compatible with the Java desktop version (same binary format)<br>
+        ⚠️ For educational and personal use only
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(name) {
+  ['encrypt','decrypt','about'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['encrypt','decrypt','about'][i] === name);
+  });
+}
+
+// ── Password visibility toggle ────────────────────────────────
+function togglePass(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// ── Password strength indicator ───────────────────────────────
+document.getElementById('enc-pass').addEventListener('input', function() {
+  const val = this.value;
+  const bar = document.getElementById('enc-strength-bar');
+  const lbl = document.getElementById('enc-strength-label');
+  let strength = 0, label = '', color = '';
+
+  if (val.length >= 6)  strength++;
+  if (val.length >= 10) strength++;
+  if (/[A-Z]/.test(val)) strength++;
+  if (/[0-9]/.test(val)) strength++;
+  if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+  const levels = [
+    { w:'0%',   c:'',                l:''             },
+    { w:'25%',  c:'var(--red)',      l:'Weak'         },
+    { w:'50%',  c:'var(--yellow)',   l:'Fair'         },
+    { w:'75%',  c:'var(--accent)',   l:'Good'         },
+    { w:'100%', c:'var(--green)',    l:'Strong ✅'    },
+  ];
+
+  const lvl = levels[Math.min(strength, 4)];
+  bar.style.width = lvl.w;
+  bar.style.background = lvl.c;
+  lbl.style.color = lvl.c;
+  lbl.textContent = lvl.l;
+});
+
+// ── Encrypt ───────────────────────────────────────────────────
+async function doEncrypt() {
+  const text = document.getElementById('enc-input').value.trim();
+  const pass = document.getElementById('enc-pass').value;
+
+  hideResults('enc');
+
+  const btn = document.getElementById('enc-btn');
+  btn.innerHTML = '<span class="spinner"></span> Encrypting...';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/encrypt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, password: pass })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showError('enc', data.error);
+    } else {
+      showResult('enc', data.ciphertext);
+    }
+  } catch(e) {
+    showError('enc', 'Network error — is the server running?');
+  } finally {
+    btn.innerHTML = '🔒 Encrypt';
+    btn.disabled = false;
+  }
+}
+
+// ── Decrypt ───────────────────────────────────────────────────
+async function doDecrypt() {
+  const ciphertext = document.getElementById('dec-input').value.trim();
+  const pass       = document.getElementById('dec-pass').value;
+
+  hideResults('dec');
+
+  const btn = document.getElementById('dec-btn');
+  btn.innerHTML = '<span class="spinner"></span> Decrypting...';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/decrypt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ciphertext, password: pass })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showError('dec', data.error);
+    } else {
+      showResult('dec', data.plaintext);
+    }
+  } catch(e) {
+    showError('dec', 'Network error — is the server running?');
+  } finally {
+    btn.innerHTML = '🔓 Decrypt';
+    btn.disabled = false;
+  }
+}
+
+// ── UI helpers ────────────────────────────────────────────────
+function showResult(prefix, text) {
+  document.getElementById(prefix + '-result-text').textContent = text;
+  document.getElementById(prefix + '-result').style.display = 'block';
+}
+
+function showError(prefix, msg) {
+  document.getElementById(prefix + '-error-text').textContent = msg;
+  document.getElementById(prefix + '-error').style.display = 'block';
+}
+
+function hideResults(prefix) {
+  document.getElementById(prefix + '-result').style.display = 'none';
+  document.getElementById(prefix + '-error').style.display  = 'none';
+}
+
+function copyResult(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+}
+
+function clearEnc() {
+  document.getElementById('enc-input').value = '';
+  document.getElementById('enc-pass').value  = '';
+  hideResults('enc');
+  document.getElementById('enc-strength-bar').style.width = '0%';
+  document.getElementById('enc-strength-label').textContent = '';
+}
+
+function clearDec() {
+  document.getElementById('dec-input').value = '';
+  document.getElementById('dec-pass').value  = '';
+  hideResults('dec');
+}
+</script>
+</body>
+</html>
